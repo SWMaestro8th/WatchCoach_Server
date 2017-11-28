@@ -1,0 +1,606 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Hello World App
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+paths:
+  /signup:
+    x-swagger-router-controller: authenticate
+    post:
+      description: Signup with given UserData
+      operationId: signup
+      parameters:
+        - in: body
+          name: userdata
+          description: username and password of user whom to signup
+          required: true
+          schema:
+            $ref: "#/definitions/UserData"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /signup/dupcheck:
+    x-swagger-router-controller: authenticate
+    post:
+      description: Check if the given username is already exist
+      operationId: usernameDupCheck
+      parameters:
+        - in: body
+          name: username
+          description: username to check if it is duplicate
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "201":
+          description: Duplicate
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /login:
+    x-swagger-router-controller: authenticate
+    post:
+      description: Login with given UserData
+      operationId: login
+      parameters:
+        - in: body
+          name: userdata
+          description: username and password of user whom to login
+          required: true
+          schema:
+            $ref: "#/definitions/UserData"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        "201":
+          description: Wrong username or password
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /user/{user_id}:
+    x-swagger-router-controller: user
+    get:
+      description: Get user profile by using user_id
+      operationId: getUserProfileById
+      parameters:
+        - in: path
+          name: user_id
+          description: user_id of user to get profile
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/UserProfileResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /team:
+    x-swagger-router-controller: team
+    get:
+      description: Get team list
+      operationId: getTeamList
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/TeamListResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+    post:
+      description: Create new team
+      operationId: foundNewTeam
+      parameters:
+        - in: body
+          name: teamdata
+          description: team information
+          required: true
+          schema:
+            $ref: "#/definitions/TeamData"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/FoundResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /team/dupcheck:
+    x-swagger-router-controller: team
+    post:
+      description: Teamname duplicate check with given teamname
+      operationId: teamnameDupCheck
+      parameters:
+        - in: body
+          name: teamname
+          description: teamname
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "201":
+          description: Duplicate
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /team/{team_id}/members:
+    x-swagger-router-controller: team
+    get:
+      description: Get members of team by using team_id
+      operationId: getTeamMemberById
+      parameters:
+        - in: path
+          name: team_id
+          description: team_id of team to get members
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/UserListResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /team/{team_id}/waiting:
+    x-swagger-router-controller: team
+    get:
+      description: Get waitings of team by using team_id
+      operationId: getTeamWaitingById
+      parameters:
+        - in: path
+          name: team_id
+          description: team_id of team to get members
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/UserListResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+    post:
+      description: Request to join the team with team_id
+      operationId:  requestTeamJoin
+      parameters:
+        - in: path
+          name: team_id
+          description: team_id of team to get members
+          required: true
+          type: integer
+        - in: body
+          name: user_id
+          description: user_id of user to join team
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "400":
+          description: Duplicate Request
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "401":
+          description: Already joined
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "402":
+          description: Join Blocked
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /team/{team_id}/waiting/management:
+    x-swagger-router-controller: team
+    post:   
+      description: Management waitings of team by using team_id
+      operationId: manageTeamWaitingById
+      parameters:
+        - in: path
+          name: team_id
+          description: team_id of team to management waitings
+          required: true
+          type: integer
+        - in: body
+          name: commitdata
+          description: target_user_id and accept or reject to manage waiting
+          required: true
+          schema:
+            $ref: "#/definitions/CommitData"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "400":
+          description: No user with target_user_id waiting to join the team with team_id
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /team/{team_id}/recorded:
+    x-swagger-router-controller: team
+    get:
+      description: Get game_id of recorded game list by using team_id
+      operationId: getRecordedGameListById
+      parameters:
+        - in: path
+          name: team_id
+          description: team_id of team to get recorded game list
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/GameListResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /team/{team_id}/tactic:
+    x-swagger-router-controller: team
+    get:
+      description: Get tactic_id list of team by using team_id
+      operationId: getTacticListById
+      parameters:
+        - in: path
+          name: team_id
+          description: team_id of team to get tactic list
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/TacticListResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /game/recorded/{game_id}:
+    x-swagger-router-controller: game
+    get:
+      description: Get recorded game data by game_id
+      operationId: getRecordedGameById
+      parameters:
+        - in: path
+          name: game_id
+          description: game_id of recorded game to get data
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/GameDataResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /tactic/{tactic_id}:
+    x-swagger-router-controller: tactic
+    get:
+      description: Get tactic the part of recorded game by tactic_id
+      operationId: getTacticById
+      parameters:
+        - in: path
+          name: tactic_id
+          description: tactic_id of tactic to get data
+          required: true
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/TacticDataResponse"
+        default:
+          description:  Error
+          schema:
+            $ref: "#/definitions/MessageResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  UserData:
+    type: object
+    required:
+      - username
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+      password:
+        type: string
+  LoginResponse:
+    required:
+      - user_id
+    properties:
+      user_id:
+        type: integer
+  MessageResponse:
+    properties:
+      message:
+        type: string
+  TeamListResponse:
+    required:
+      - team_list
+    properties:
+      team_list:
+        type: array
+        items:
+          $ref: "#/definitions/TeamOverview"
+  UserProfileResponse:
+    required:
+      - username
+    properties:
+      username:
+        type: string
+      myteam_list:
+        type: array
+        items:
+          type: integer
+      waitteam_list:
+        type: array
+        items:
+          type: integer
+  TeamData:
+    required:
+      - teamname
+      - sector
+      - owner_id
+      - message
+      - option_auto_join
+      - option_re_request_join
+    properties:
+      id:
+        type: integer
+      teamname:
+        type: string
+      sector:
+        type: string
+      owner_id:
+        type: integer
+      message:
+        type: string
+      found_dt:
+        type: string
+        format: date-time
+      option_auto_join:
+        type: boolean
+      option_re_request_join:
+        type: boolean
+  FoundResponse:
+    required:
+      - team_id
+    properties:
+      team_id:
+        type: integer
+  UserListResponse:
+    required:
+      - user_list
+    properties:
+      user_list:
+        type: array
+        items:
+          type: integer
+  CommitData:
+    required:
+      - target_user_id
+      - accept_or_reject
+    properties:
+      target_user_id:
+        type: integer
+      accept_or_reject:
+        type: string
+  TeamOverview:
+    required:
+      - teamname
+      - sector
+      - owner_id
+      - message
+      - found_dt
+    properties:
+      teamname:
+        type: string
+      sector:
+        type: string
+      owner_id:
+        type: integer
+      message:
+        type: string
+      found_dt:
+        type: string
+        format: date-time
+  GameListResponse:
+    required:
+      - game_list
+    properties:
+      game_list:
+        type: array
+        items:
+          $ref: "#/definitions/GameOverviewItem"
+  GameOverviewItem:
+    required:
+      - id
+      - hometeam_id
+      - awayteam_id
+      - game_dt
+      - home_score
+      - away_score
+    properties:
+      id:
+        type: integer
+      hometeam_id:
+        type: integer
+      awayteam_id:
+        type: integer
+      game_dt:
+        type: string
+        format: date-time
+      home_score:
+        type: integer
+      away_score:
+        type: integer
+  GameDataResponse:
+    required:
+      - shoot_data
+      - position_data
+    properties:
+      position_data:
+        type: array
+        items:
+          $ref: "#/definitions/PositionDataItem"
+      shoot_data:
+        type: array
+        items:
+          $ref: "#/definitions/ShootDataItem"
+  TacticListResponse:
+    required:
+      - tactic_list
+    properties:
+      tactic_list:
+        type: array
+        items:
+          $ref: "#/definitions/TacticOverviewItem"
+  TacticOverviewItem:
+    required:
+      - id
+      - tactic_name
+      - comment
+      - is_favorite
+      - attack_or_defense
+      - using_time
+      - success_rate
+    properties:
+      id:
+        type: integer
+      tactic_name:
+        type: string
+      comment:
+        type: string
+      is_favorite:
+        type: boolean
+      attack_or_defense:
+        type: boolean
+      using_time:
+        type: number
+        format: float
+      success_rate:
+        type: number
+        format: float
+  TacticDataResponse:
+    required:
+      - position_data
+    properties:
+      position_data:
+        type: array
+        items:
+          $ref: "#/definitions/PositionDataItem"
+  PositionDataItem:
+    required:
+      - datetime
+      - positions
+      - own_team
+    properties:
+      datetime:
+        type: string
+        format: date-time
+      positions:
+        type: array
+        items:
+          $ref: "#/definitions/PositionItem"
+      own_team:
+        type: boolean
+  ShootDataItem:
+    required:
+      - datetime
+      - position
+      - is_goal
+    properties:
+      datetime:
+        type: string
+        format: date-time
+      position:
+        $ref: "#/definitions/PositionItem"
+      is_goal:
+        type: boolean
+  PositionItem:
+    required:
+      - px
+      - py
+      - team
+    properties:
+      px:
+        type: number
+        format: float
+      py:
+        type: number
+        format: float
+      team:
+        type: integer
+        minimum: 0
+        maximum: 2
+securityDefinitions:
+  api_key:
+    type: apiKey
+    in: query
+    name: api_key
+security:
+  - api_key: []
